@@ -14,6 +14,7 @@ const {
     editProblem,
     getAllProblems,
     getSingleProblem,
+    deleteProblem,
   } = require("../controllers/problemController");
   
   const router = express.Router();
@@ -46,5 +47,8 @@ const {
   
   // get all problems
   router.get("/problems", getAllProblems);
+
+  // delete a problem
+  router.delete("/problem/:id", deleteProblem);
   
   module.exports = router;

@@ -83,3 +83,20 @@ exports.getAllProblems = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+exports.deleteProblem = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const problem = await Problem.findByIdAndDelete(id);
+
+    if (!problem) {
+      return res.status(404).json({ error: "Problem not found" });
+    }
+
+    res.status(200).json({ message: "Problem deleted successfully", status: true });
+  } catch (error) {
+    console.log("Error in Delete Problem", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
