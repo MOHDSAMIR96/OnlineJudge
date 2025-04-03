@@ -21,6 +21,14 @@ const problemSchema = new mongoose.Schema({
     type: Array,
     required: true,
   },
+  topic: {
+    type: String,
+    required: true,
+  },
+  medium: {
+    type: String,
+    required: true,
+  },
 });
 
 module.exports = mongoose.model("Problem", problemSchema);

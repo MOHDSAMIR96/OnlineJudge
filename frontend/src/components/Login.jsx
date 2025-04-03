@@ -33,8 +33,8 @@ const Login = () => {
         <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleLogin} className="space-y-4">
-          <input type="email" placeholder="Email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
+          <input type="email" placeholder="Enter your email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
+          <input type="password" placeholder="Enter your password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
           <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md">Login</button>
         </form>
         <p className="text-center mt-4">

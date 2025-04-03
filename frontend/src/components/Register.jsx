@@ -35,10 +35,10 @@ const Register = () => {
         <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
         {error && <p className="text-red-500 text-center">{error}</p>}
         <form onSubmit={handleRegister} className="space-y-4">
-          <input type="text" placeholder="First Name" className="w-full p-3 border rounded-md" onChange={(e) => setFirstname(e.target.value)} required />
-          <input type="text" placeholder="Last Name" className="w-full p-3 border rounded-md" onChange={(e) => setLastname(e.target.value)} required />
-          <input type="email" placeholder="Email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
+          <input type="text" placeholder="Enter your first name" className="w-full p-3 border rounded-md" onChange={(e) => setFirstname(e.target.value)} required />
+          <input type="text" placeholder="Enter your last name" className="w-full p-3 border rounded-md" onChange={(e) => setLastname(e.target.value)} required />
+          <input type="email" placeholder="Enter your email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
+          <input type="password" placeholder="Enter your password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
           <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-md">Register</button>
         </form>
         <p className="text-center mt-4">
