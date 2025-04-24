@@ -2,6 +2,8 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const {runCode} = require("../controllers/compilerController");
+
 const {
     registerUser,
     loginUser,
@@ -50,5 +52,7 @@ const {
 
   // delete a problem
   router.delete("/problem/:id", deleteProblem);
+
+  router.post("/run",runCode);
   
   module.exports = router;

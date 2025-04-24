@@ -28,6 +28,9 @@ const Navbar1 = () => {
   const handleCreateProblem = () => {
     navigate("/create");
   };
+  const handleCompiler= () => {
+    navigate("/compiler");
+  };
 
   return (
     <nav className="bg-white border-gray-200 dark:bg-gray-900">
@@ -101,17 +104,17 @@ const Navbar1 = () => {
         <div className="hidden w-full md:block md:w-auto" id="navbar-default">
           <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
             <li>
-              <a href="#" className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" onClick={handleHome}>
+              <a onClick={handleHome} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" >
                 Home
               </a>
             </li>
             <li>
-              <a href="#" className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" onClick={handleCreateProblem}>
+              <a  onClick={handleCreateProblem} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
                 Create
               </a>
             </li>
             <li>
-              <a href="#" className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
+              <a onClick={handleCompiler} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
                 Compiler
               </a>
             </li>
@@ -122,7 +125,7 @@ const Navbar1 = () => {
             </li>
             {user && (
               <li>
-                <a href="#" className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" onClick={handleLogout}>
+                <a onClick={handleLogout} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" >
                   Logout
                 </a>
               </li>

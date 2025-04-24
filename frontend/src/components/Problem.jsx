@@ -5,7 +5,7 @@ import Navbar from './Navbar1'
 const Problem = () => {
     return (
       <>
-      {/* <Navbar/> */}
+      <Navbar/>
       <ProblemManager/>
       </>
     )
