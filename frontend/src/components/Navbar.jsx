@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-const Navbar1 = () => {
+const Navbar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const dropdownRef = useRef(null); 
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -13,6 +14,22 @@ const Navbar1 = () => {
       setUser(JSON.parse(storedUser));
     }
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    if (dropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownOpen]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -30,6 +47,9 @@ const Navbar1 = () => {
   };
   const handleCompiler= () => {
     navigate("/submission");
+  };
+  const handleLeaderboard= () => {
+    navigate("/leaderboard");
   };
 
   return (
@@ -51,7 +71,11 @@ const Navbar1 = () => {
               onClick={() => setDropdownOpen(!dropdownOpen)}
             >
               <span className="sr-only">Open user menu</span>
-              <img className="w-8 h-8 rounded-full" src="/docs/images/people/profile-picture-3.jpg" alt="User" />
+              <img
+                className="w-8 h-8 rounded-full"
+                src="/docs/images/people/profile-picture-3.jpg"
+                alt="User"
+              />
             </button>
           ) : (
             <button
@@ -63,7 +87,10 @@ const Navbar1 = () => {
           )}
 
           {dropdownOpen && user && (
-            <div className="absolute right-4 mt-2 w-48 divide-y rounded-lg shadow-lg bg-white text-black divide-gray-100">
+            <div
+              ref={dropdownRef} // APPLY ref here
+              className="absolute right-4 mt-2 w-48 divide-y rounded-lg shadow-lg bg-white text-black divide-gray-100"
+            >
               <div className="px-4 py-3 mt-10">
                 <span className="block text-sm">{user.firstname} {user.lastname}</span>
                 <span className="block text-sm truncate">{user.email}</span>
@@ -119,7 +146,7 @@ const Navbar1 = () => {
               </a>
             </li>
             <li>
-              <a href="#" className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
+              <a onClick={handleLeaderboard} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
                 Leaderboard
               </a>
             </li>
@@ -137,4 +164,4 @@ const Navbar1 = () => {
   );
 };
 
-export default Navbar1;
+export default Navbar;

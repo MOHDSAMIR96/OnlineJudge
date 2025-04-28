@@ -19,8 +19,6 @@ const Compiler = ({ userId }) => {
     const fetchProblem = async () => {
       try {
         const res = await axios.get(`http://localhost:8000/problem/${problemId}`);
-        console.log("data........",res.data);
-        console.log("testcases........",res.data.problem.testCases);
         if (res.data?.problem) {
           const problemData = res.data.problem;
 
@@ -28,7 +26,6 @@ const Compiler = ({ userId }) => {
         if (typeof problemData.testCases === 'string') {
           problemData.testCases = JSON.parse(`[${problemData.testCases}]`); // This will parse the string into an array of objects
         }
-        console.log("test221122......",problemData.testCases)
           setProblem(problemData);
           setCode(getDefaultCode(language));
         }
@@ -78,7 +75,6 @@ const Compiler = ({ userId }) => {
 
     try {
       let allPassed = true;
-    console.log("test111111111ewwe",problem.testCases);
       // Loop through all test cases from problem
       for (let testCase of problemData.testCases) {
         const payload = {
@@ -88,7 +84,6 @@ const Compiler = ({ userId }) => {
           problemId, 
           userId,
         };
-        console.log("test input .....",payload);
         const { data } = await axios.post("http://localhost:8000/run", payload);
         const userOutput = data.output?.trim();
         const expectedOutput = testCase.output?.trim();
@@ -151,9 +146,9 @@ const Compiler = ({ userId }) => {
       <div className="lg:w-1/2 lg:pr-4 mb-4 lg:mb-0">
         {showProblemDetails && problem && (
           <>
-            <h1 className="text-3xl font-bold mb-3">{problem.title}</h1>
+            <h1 className="text-3xl font-bold mb-3">Online Judge - Code Submission</h1>
             <div className="mb-4 text-gray-700 bg-gray-50 p-4 rounded shadow-sm max-h-[400px] overflow-y-auto">
-              <h2 className="text-lg font-semibold mb-2">Problem Description</h2>
+              <h2 className="text-lg font-semibold mb-2">{problem.title}</h2>
               <pre className="text-sm whitespace-pre-wrap">{problem.description}</pre>
             </div>
           </>
@@ -192,15 +187,15 @@ const Compiler = ({ userId }) => {
 
         {/* Input Area for Run */}
         <div>
-          <label className="block text-sm font-medium mb-1">Custom Input (for Run only)</label>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="w-full border border-gray-300 rounded-sm px-2 py-1"
-            rows={4}
-            placeholder="Enter input here..."
-          ></textarea>
-        </div>
+            <h2 className="text-lg font-semibold mb-1">Custom Input (for Run only)</h2>
+            <textarea
+              rows="6"
+              value={input}
+              placeholder="Enter input here..."
+              onChange={(e) => setInput(e.target.value)}
+              className="w-full p-3 rounded-md bg-black text-green-400 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
 
         <div className="flex space-x-4">
           <button

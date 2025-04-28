@@ -52,88 +52,92 @@ print(num1 + num2)`;
       const { data } = await axios.post('http://localhost:8000/run', payload);
       setOutput(data.output);
     } catch (error) {
-      console.log(error?.response?.data || error.message);
+      console.error(error?.response?.data || error.message);
       setOutput('Error occurred while running the code');
     }
   };
 
-  // Mapping our language to Monaco Editor's language id
   const getMonacoLang = (lang) => {
     switch (lang) {
-      case 'cpp':
-        return 'cpp';
-      case 'java':
-        return 'java';
-      case 'python':
-        return 'python';
-      default:
-        return 'plaintext';
+      case 'cpp': return 'cpp';
+      case 'java': return 'java';
+      case 'python': return 'python';
+      default: return 'plaintext';
     }
   };
 
   return (
-    <div className="container mx-auto py-8 flex flex-col lg:flex-row items-stretch">
-      <div className="lg:w-1/2 lg:pr-4 mb-4 lg:mb-0">
-        <h1 className="text-3xl font-bold mb-3">AlgoU Online Judge - Code Submission</h1>
+    <div className="container mx-auto py-8 px-4">
+      <h1 className="text-3xl font-bold mb-6 text-center">Online Compiler</h1>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium mb-1">Select Language</label>
-          <select
-            value={language}
-            onChange={handleLanguageChange}
-            className="border border-gray-300 px-2 py-1 rounded-sm"
-          >
-            <option value="cpp">C++</option>
-            <option value="java">Java</option>
-            <option value="python">Python</option>
-          </select>
-        </div>
-
-        {/* Monaco Editor */}
-        <div className="mb-4">
-          <Editor
-            height="300px"
-            theme="vs-dark"
-            language={getMonacoLang(language)}
-            value={code}
-            onChange={(newCode) => setCode(newCode)}
-            options={{
-              fontSize: 14,
-              fontFamily: '"Fira code", "Fira Mono", monospace',
-              minimap: { enabled: false },
-              scrollBeyondLastLine: false,
-              automaticLayout: true,
-            }}
-          />
-        </div>
-
-        <button
-          onClick={handleSubmit}
-          className="w-full text-center mt-4 bg-gradient-to-br from-pink-500 to-orange-400 hover:from-pink-600 hover:to-orange-500 focus:outline-none text-white font-medium rounded-lg text-sm px-5 py-2.5"
-        >
-          Run Code
-        </button>
-      </div>
-
-      {/* Input and Output */}
-      <div className="lg:w-1/2 lg:pl-8 pt-10">
-        <div className="mb-4">
-          <h2 className="text-lg font-semibold mb-2">Input</h2>
-          <textarea
-            rows="5"
-            value={input}
-            placeholder="Enter input here"
-            onChange={(e) => setInput(e.target.value)}
-            className="border border-gray-300 rounded-sm py-1.5 px-4 mb-1 focus:outline-none focus:border-indigo-500 resize-none w-full"
-            style={{ minHeight: '100px' }}
-          />
-        </div>
-
-        <div className="bg-gray-100 rounded-sm shadow-md p-4 h-28">
-          <h2 className="text-lg font-semibold mb-2">Output</h2>
-          <div style={{ fontFamily: '"Fira code", "Fira Mono", monospace', fontSize: 12 }}>
-            {output}
+      <div className="flex flex-col lg:flex-row gap-8">
+        
+        {/* Left Side - Editor and Run Button */}
+        <div className="flex-1 flex flex-col">
+          {/* Language Selector */}
+          <div className="mb-4 flex items-center gap-4">
+            <label className="text-sm font-medium">Select Language:</label>
+            <select
+              value={language}
+              onChange={handleLanguageChange}
+              className="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            >
+              <option value="cpp">C++</option>
+              <option value="java">Java</option>
+              <option value="python">Python</option>
+            </select>
           </div>
+
+          {/* Code Editor */}
+          <div className="flex-1 mb-4">
+            <Editor
+              height="400px"
+              theme="vs-dark"
+              language={getMonacoLang(language)}
+              value={code}
+              onChange={(newCode) => setCode(newCode)}
+              options={{
+                fontSize: 14,
+                fontFamily: '"Fira code", "Fira Mono", monospace',
+                minimap: { enabled: false },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+              }}
+            />
+          </div>
+
+          {/* Run Button */}
+          <button
+            onClick={handleSubmit}
+            className="w-full py-2 mt-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all"
+          >
+            Run Code
+          </button>
+        </div>
+
+        {/* Right Side - Input and Output */}
+        <div className="flex-1 flex flex-col gap-6">
+          
+          {/* Input Area */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Input</h2>
+            <textarea
+              rows="6"
+              value={input}
+              placeholder="Enter input here..."
+              onChange={(e) => setInput(e.target.value)}
+              className="w-full p-3 rounded-md bg-black text-green-400 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-blue-400"
+            />
+          </div>
+
+          {/* Output Area */}
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Output</h2>
+            <div className="w-full min-h-[150px] p-3 rounded-md bg-black text-green-400 font-mono overflow-y-auto">
+              {output || "Output will appear here..."}
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
