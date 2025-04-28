@@ -3,4 +3,20 @@ body {
     background-size: cover;
     background-position: center;
   }
+  .editor-line {
+    display: block;
+    position: relative;
+    padding-left: 40px;
+  }
+  
+  .editor-line-number {
+    position: absolute;
+    left: 5px;
+    width: 30px;
+    text-align: right;
+    color: #6e7681;
+    user-select: none;
+    pointer-events: none;
+  }
+  
   

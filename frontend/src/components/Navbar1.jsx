@@ -29,7 +29,7 @@ const Navbar1 = () => {
     navigate("/create");
   };
   const handleCompiler= () => {
-    navigate("/compiler");
+    navigate("/submission");
   };
 
   return (

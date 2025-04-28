@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Home from "./components/Home";
 import ProblemManager from "./components/ProblemManager";
 import Compiler from "./components/Compiler";
+import Submission from "./components/Submission";
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
         <Route path="/compiler" element={<Compiler />} />
         <Route path="/problem/:id" element={<Compiler />} />
         <Route path="/" element={<Home/>} />
+        <Route path="/submission" element ={<Submission/>}/>
       </Routes>
     </Router>
   );

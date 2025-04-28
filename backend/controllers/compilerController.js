@@ -3,16 +3,13 @@ const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const { exec, execSync } = require("child_process");
 const Submission = require("../model/Submission");
-const TestCase = require("../model/Testcase");
+const TestCase = require("../model/TestCase");
 
 exports.runCode = async (req, res) => {
   const { language, code, input, problemId, userId } = req.body;
 
-  // if (!code || !language || !problemId || !userId) {
-  //   return res.status(400).json({ error: "Missing required fields", status: "ERROR" });
-  // }
-
   try {
+    // Generate file from code input
     const filePath = await generateFile(language, code);
     const inputFilePath = await generateInputFile(input || "");
 
@@ -28,8 +25,13 @@ exports.runCode = async (req, res) => {
     }
 
     let verdict = "Accepted";
+
+    // Fetch test cases for the given problem
     const testCases = await TestCase.find({ problemId });
+
+    // Iterate over the test cases to compare output
     for (const testCase of testCases) {
+      console.log("controller",testCase);
       const inputFile = await generateInputFile(testCase.input);
       let expectedOutput = testCase.expectedOutput.trim();
       let userOutput;
@@ -43,12 +45,18 @@ exports.runCode = async (req, res) => {
         break;
       }
 
+      console.log("Test Case Input:", testCase.input);
+      console.log("Expected Output:", expectedOutput);
+      console.log("User Output:", userOutput);
+
+      // Check if the output matches the expected output
       if (userOutput.trim() !== expectedOutput) {
         verdict = "Wrong Answer";
         break;
       }
     }
 
+    // Create a submission record
     const submission = new Submission({
       userId,
       problemId,
@@ -61,6 +69,7 @@ exports.runCode = async (req, res) => {
 
     await submission.save();
 
+    // Return the response
     res.json({ output, verdict, status: "SUCCESS" });
   } catch (error) {
     console.log("Error in Running Code", error);
@@ -69,6 +78,7 @@ exports.runCode = async (req, res) => {
   }
 };
 
+// Helper functions for file generation
 const generateFile = async (format, content) => {
   const dirCodes = path.join(__dirname, "../codes");
   if (!fs.existsSync(dirCodes)) fs.mkdirSync(dirCodes);
@@ -104,6 +114,7 @@ const generateInputFile = async (input) => {
   return inputFilePath;
 };
 
+// Execute functions for different languages
 const executeCpp = (filePath, inputFilePath) => {
   try {
     execSync('g++ --version');
