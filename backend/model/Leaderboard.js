@@ -1,11 +1,11 @@
 const mongoose = require('mongoose');
 
 const leaderboardSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
+ userId: {
+     type: mongoose.Schema.Types.ObjectId,
+     ref: "user",
+     required: true,
+   },
   username: {
     type: String,
     required: true,

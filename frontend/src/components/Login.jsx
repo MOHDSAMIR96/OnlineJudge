@@ -10,6 +10,8 @@ const Login = () => {
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     try {
       const response = await axios.post("http://localhost:8000/login", {
         email,
@@ -27,18 +29,57 @@ const Login = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-        <img src="/images/coding_login.jpg" alt="Login" className="w-full rounded-lg mb-4" />
-        <h2 className="text-2xl font-bold text-center mb-4">Login</h2>
-        {error && <p className="text-red-500 text-center">{error}</p>}
-        <form onSubmit={handleLogin} className="space-y-4">
-          <input type="email" placeholder="Enter your email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Enter your password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-md">Login</button>
+    <div className="relative h-screen w-full overflow-hidden flex items-center justify-center bg-gradient-to-r from-purple-600 via-pink-500 to-red-500 animate-gradient">
+      {/* Animated Gradient Background */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_top_left,_var(--tw-gradient-stops))] from-purple-400 via-pink-300 to-yellow-200 opacity-30 blur-3xl animate-pulse" />
+
+      <div className="relative z-10 bg-white shadow-2xl rounded-xl p-10 max-w-md w-full backdrop-blur-sm bg-opacity-90">
+        <img
+          src="/images/coding_login.jpg"
+          alt="Login"
+          className="w-full rounded-lg mb-6"
+        />
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-4">
+          Welcome Back
+        </h2>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4 text-center text-sm">
+            {error}
+          </div>
+        )}
+
+        <form onSubmit={handleLogin} className="space-y-5">
+          <input
+            type="email"
+            placeholder="Email"
+            className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full px-4 py-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition duration-300"
+          >
+            Login
+          </button>
         </form>
-        <p className="text-center mt-4">
-          Don't have an account? <a href="/register" className="text-blue-500">Sign up</a>
+
+        <p className="text-center mt-6 text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <a
+            href="/register"
+            className="text-blue-500 hover:underline font-medium"
+          >
+            Sign up
+          </a>
         </p>
       </div>
     </div>

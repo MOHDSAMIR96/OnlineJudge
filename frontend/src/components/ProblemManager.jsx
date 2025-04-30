@@ -16,7 +16,6 @@ const ProblemManager = () => {
   });
   const [isEditing, setIsEditing] = useState(false);
 
-  // Fetch all problems
   useEffect(() => {
     fetchProblems();
   }, []);
@@ -30,12 +29,10 @@ const ProblemManager = () => {
     }
   };
 
-  // Handle input change
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Handle form submit (add or update)
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -54,14 +51,12 @@ const ProblemManager = () => {
     }
   };
 
-  // Handle problem selection for editing
   const handleSelectProblem = (problem) => {
     setSelectedProblem(problem);
     setIsEditing(true);
     setFormData({ ...problem });
   };
 
-  // Handle delete problem
   const handleDelete = async (id) => {
     try {
       await axios.delete(`http://localhost:8000/problem/${id}`);
@@ -71,7 +66,6 @@ const ProblemManager = () => {
     }
   };
 
-  // Reset form
   const resetForm = () => {
     setFormData({
       title: "",
@@ -87,140 +81,108 @@ const ProblemManager = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-lg">
-      <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-8">
-        Online Judge - Problem Management
-      </h2>
+    <div className="min-h-screen bg-gradient-to-r from-purple-500 via-pink-500 to-red-500 animate-gradient flex items-center justify-center px-4 py-10">
+      <div className="max-w-7xl w-full bg-white/70 backdrop-blur-md shadow-2xl rounded-2xl p-10">
+        <h2 className="text-4xl font-extrabold text-center text-gray-800 mb-10 drop-shadow">
+          Online Judge - Problem Manager
+        </h2>
 
-      <div className="grid grid-cols-2 gap-8">
-        {/* Problem List Section */}
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <h3 className="text-3xl font-bold text-gray-800 mb-4 text-center">Problem List</h3>
-          <div className="bg-gray-300 p-3 rounded-lg font-semibold text-gray-700 flex justify-between">
-            <span className="w-1/4">Title</span>
-            <span className="w-1/4 text-center">Topic</span>
-            <span className="w-1/4 text-center">Medium</span>
-            <span className="w-1/4 text-center">Actions</span>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+          {/* Problem List */}
+          <div className="bg-white rounded-xl p-6 shadow-md">
+            <h3 className="text-2xl font-bold text-center text-gray-800 mb-4">
+              Problems
+            </h3>
+            <div className="bg-gray-100 p-3 rounded-lg font-semibold text-gray-700 flex justify-between text-sm">
+              <span className="w-1/4">Title</span>
+              <span className="w-1/4 text-center">Topic</span>
+              <span className="w-1/4 text-center">Medium</span>
+              <span className="w-1/4 text-center">Actions</span>
+            </div>
+
+            <div className="space-y-3 mt-2 max-h-[500px] overflow-y-auto">
+              {problems.length > 0 ? (
+                problems.map((problem) => (
+                  <div
+                    key={problem._id}
+                    className="flex justify-between items-center p-3 bg-gray-50 border rounded-md hover:bg-gray-100 transition-all"
+                  >
+                    <span className="w-1/4 truncate text-sm font-medium">{problem.title}</span>
+                    <span className="w-1/4 text-center text-sm">{problem.topic}</span>
+                    <span className="w-1/4 text-center text-sm">{problem.medium}</span>
+                    <div className="w-1/4 flex justify-center space-x-4">
+                      <button
+                        onClick={() => handleSelectProblem(problem)}
+                        className="text-yellow-500 hover:text-yellow-700"
+                        title="Edit"
+                      >
+                        <FaEdit size={18} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(problem._id)}
+                        className="text-red-500 hover:text-red-700"
+                        title="Delete"
+                      >
+                        <FaTrash size={18} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-gray-500">No problems found.</p>
+              )}
+            </div>
           </div>
 
-          {problems.length > 0 ? (
-            problems.map((problem) => (
-              <div
-                key={problem._id}
-                className="flex justify-between items-center p-4 border-b bg-white hover:bg-gray-50 transition-all rounded-md shadow-sm mt-2"
-              >
-                <span className="w-1/4 font-medium text-gray-800">
-                  {problem.title}
-                </span>
-                <span className="w-1/4 text-center text-gray-700">{problem.topic}</span>
-                <span className="w-1/4 text-center text-gray-700">{problem.medium}</span>
-                <div className="w-1/4 flex justify-center space-x-4">
-                  <button
-                    onClick={() => handleSelectProblem(problem)}
-                    className="text-yellow-500 hover:text-yellow-700 transition-all"
-                    title="Edit"
-                  >
-                    <FaEdit size={20} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(problem._id)}
-                    className="text-red-500 hover:text-red-700 transition-all"
-                    title="Delete"
-                  >
-                    <FaTrash size={20} />
-                  </button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <p className="text-center text-gray-500 mt-4">No problems found.</p>
-          )}
-        </div>
+          {/* Form */}
+          <div className="bg-white rounded-xl p-6 shadow-md">
+            <h3 className="text-2xl font-bold text-center text-gray-800 mb-4">
+              {isEditing ? "Edit Problem" : "Add Problem"}
+            </h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {["title", "description", "topic", "input", "output", "testCases"].map((field) => (
+                <textarea
+                  key={field}
+                  name={field}
+                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
+                  value={formData[field]}
+                  onChange={handleChange}
+                  className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                  required
+                  rows={field === "description" ? 3 : 2}
+                />
+              ))}
 
-        {/* Add / Edit Form Section */}
-        <div className="bg-gray-100 p-6 rounded-lg shadow-md">
-          <h3 className="text-3xl font-bold text-gray-800 mb-4 text-center">
-            {isEditing ? "Edit Problem" : "Add Problem"}
-          </h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              type="text"
-              name="title"
-              placeholder="Title"
-              value={formData.title}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <textarea
-              name="description"
-              placeholder="Description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <input
-              type="text"
-              name="topic"
-              placeholder="Topic (e.g. Arrays, Graphs)"
-              value={formData.topic}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <select
-              name="medium"
-              value={formData.medium}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            >
-              <option value="">Select Difficulty</option>
-              <option value="Easy">Easy</option>
-              <option value="Medium">Medium</option>
-              <option value="Hard">Hard</option>
-            </select>
-            <textarea
-              name="input"
-              placeholder="Input Cases (one per line)"
-              value={formData.input}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <textarea
-              name="output"
-              placeholder="Output Cases (one per line)"
-              value={formData.output}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <textarea
-              name="testCases"
-              placeholder="Test Cases (one per line)"
-              value={formData.testCases}
-              onChange={handleChange}
-              className="w-full p-3 border rounded-md focus:ring-2 focus:ring-blue-400"
-              required
-            />
-            <button
-              type="submit"
-              className="w-full bg-green-600 text-white py-3 rounded-md font-bold text-lg hover:bg-green-700 transition-all"
-            >
-              {isEditing ? "Update Problem" : "Add Problem"}
-            </button>
-            {isEditing && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="w-full bg-gray-500 text-white py-3 rounded-md font-bold text-lg hover:bg-gray-600 transition-all mt-2"
+              <select
+                name="medium"
+                value={formData.medium}
+                onChange={handleChange}
+                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                required
               >
-                Cancel
+                <option value="">Select Difficulty</option>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+
+              <button
+                type="submit"
+                className="w-full bg-green-600 text-white py-3 rounded-md font-semibold text-lg hover:bg-green-700 transition-all"
+              >
+                {isEditing ? "Update Problem" : "Add Problem"}
               </button>
-            )}
-          </form>
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="w-full bg-gray-500 text-white py-3 rounded-md font-semibold text-lg hover:bg-gray-600 mt-2"
+                >
+                  Cancel
+                </button>
+              )}
+            </form>
+          </div>
         </div>
       </div>
     </div>

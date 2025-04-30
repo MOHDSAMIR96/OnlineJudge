@@ -1,0 +1,60 @@
+/* Animation for buttons on hover */
+@keyframes buttonHover {
+    0% {
+      transform: scale(1);
+      background-color: #38b2ac;
+    }
+    100% {
+      transform: scale(1.05);
+      background-color: #2f855a;
+    }
+  }
+  
+  button:hover {
+    animation: buttonHover 0.3s ease-in-out forwards;
+  }
+  
+  /* Fade-in effect for problem details */
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  .problem-details {
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  /* Slide-in effect for the editor */
+  @keyframes slideIn {
+    0% {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  
+  .editor-container {
+    animation: slideIn 1s ease-out;
+  }
+  
+  /* Fade-in effect for output section */
+  @keyframes fadeOutput {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  .output-container {
+    animation: fadeOutput 1s ease-in-out;
+  }
+  

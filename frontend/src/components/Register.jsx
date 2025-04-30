@@ -29,20 +29,52 @@ const Register = () => {
   };
 
   return (
-    <div className="flex h-screen items-center justify-center bg-gray-100">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-        <img src="/images/coding_login.jpg" alt="Register" className="w-full rounded-lg mb-4" />
-        <h2 className="text-2xl font-bold text-center mb-4">Register</h2>
-        {error && <p className="text-red-500 text-center">{error}</p>}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient px-4">
+      <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
+        <img src="/images/coding_login.jpg" alt="Register" className="w-full h-40 object-cover rounded-md mb-5" />
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-5">Create Account</h2>
+        {error && <p className="text-red-500 text-center mb-3">{error}</p>}
         <form onSubmit={handleRegister} className="space-y-4">
-          <input type="text" placeholder="Enter your first name" className="w-full p-3 border rounded-md" onChange={(e) => setFirstname(e.target.value)} required />
-          <input type="text" placeholder="Enter your last name" className="w-full p-3 border rounded-md" onChange={(e) => setLastname(e.target.value)} required />
-          <input type="email" placeholder="Enter your email" className="w-full p-3 border rounded-md" onChange={(e) => setEmail(e.target.value)} required />
-          <input type="password" placeholder="Enter your password" className="w-full p-3 border rounded-md" onChange={(e) => setPassword(e.target.value)} required />
-          <button type="submit" className="w-full bg-green-600 text-white py-2 rounded-md">Register</button>
+          <input
+            type="text"
+            placeholder="First name"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            onChange={(e) => setFirstname(e.target.value)}
+            required
+          />
+          <input
+            type="text"
+            placeholder="Last name"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            onChange={(e) => setLastname(e.target.value)}
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email address"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            className="w-full p-3 border border-gray-300 rounded-lg"
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="submit"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition"
+          >
+            Register
+          </button>
         </form>
-        <p className="text-center mt-4">
-          Already have an account? <a href="/login" className="text-green-500">Login</a>
+        <p className="text-center text-gray-600 mt-5">
+          Already have an account?{" "}
+          <a href="/login" className="text-green-600 hover:underline">
+            Login
+          </a>
         </p>
       </div>
     </div>

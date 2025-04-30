@@ -1,12 +1,13 @@
-import { useEffect, useState,useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
+import { motion, AnimatePresence } from "framer-motion";
 
 const Navbar = () => {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState(null);
-  const dropdownRef = useRef(null); 
+  const dropdownRef = useRef(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -21,15 +22,14 @@ const Navbar = () => {
         setDropdownOpen(false);
       }
     };
-    if (dropdownOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
-    } else {
-      document.removeEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [dropdownOpen]);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleNavigate = (path) => {
+    navigate(path);
+    setDropdownOpen(false);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -38,126 +38,100 @@ const Navbar = () => {
     navigate("/login");
   };
 
-  const handleHome = () => {
-    navigate("/");
-  };
-
-  const handleCreateProblem = () => {
-    navigate("/create");
-  };
-  const handleCompiler= () => {
-    navigate("/submission");
-  };
-  const handleLeaderboard= () => {
-    navigate("/leaderboard");
-  };
-
   return (
-    <nav className="bg-white border-gray-200 dark:bg-gray-900">
-      <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-        <a onClick={handleHome} className="flex items-center space-x-3 rtl:space-x-reverse">
-          <img src="/images/coding_login-logo.png" className="h-8" alt="Coding Logo" />
-          <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-            Coding
-          </span>
-        </a>
-
-        {/* USER PROFILE DROPDOWN */}
-        <div className="flex items-center md:order-2 space-x-3 md:space-x-0 rtl:space-x-reverse">
-          {user ? (
-            <button
-              type="button"
-              className="flex text-sm bg-gray-800 rounded-full focus:ring-4 focus:ring-gray-300 dark:focus:ring-gray-600"
-              onClick={() => setDropdownOpen(!dropdownOpen)}
-            >
-              <span className="sr-only">Open user menu</span>
-              <img
-                className="w-8 h-8 rounded-full"
-                src="/docs/images/people/profile-picture-3.jpg"
-                alt="User"
-              />
-            </button>
-          ) : (
-            <button
-              className="text-sm bg-blue-500 text-white px-4 py-2 rounded"
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </button>
-          )}
-
-          {dropdownOpen && user && (
-            <div
-              ref={dropdownRef} // APPLY ref here
-              className="absolute right-4 mt-2 w-48 divide-y rounded-lg shadow-lg bg-white text-black divide-gray-100"
-            >
-              <div className="px-4 py-3 mt-10">
-                <span className="block text-sm">{user.firstname} {user.lastname}</span>
-                <span className="block text-sm truncate">{user.email}</span>
-              </div>
-              <ul className="py-2">
-                <li>
-                  <button
-                    onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
-                  >
-                    Sign out
-                  </button>
-                </li>
-              </ul>
-            </div>
-          )}
-        </div>
-
+    <nav className="bg-white border-b border-gray-200 dark:bg-gray-900 shadow-sm">
+      <div className="max-w-screen-xl mx-auto flex items-center justify-between p-4">
         <button
-          data-collapse-toggle="navbar-default"
-          type="button"
-          className="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg md:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200"
-          aria-controls="navbar-default"
-          aria-expanded="false"
+          onClick={() => handleNavigate("/")}
+          className="flex items-center space-x-3"
         >
-          <span className="sr-only">Open main menu</span>
-          <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
-            <path
-              stroke="currentColor"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M1 1h15M1 7h15M1 13h15"
-            />
-          </svg>
+          <img src="/images/coding_login-logo.png" className="h-8" alt="Logo" />
+          <span className="text-2xl font-bold dark:text-white">Coding</span>
         </button>
 
-        <div className="hidden w-full md:block md:w-auto" id="navbar-default">
-          <ul className="font-medium flex flex-col p-4 md:p-0 mt-4 border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 rtl:space-x-reverse md:mt-0 md:border-0 md:bg-white">
+        <div className="flex items-center space-x-6">
+          <ul className="hidden md:flex space-x-6 font-medium text-gray-800">
             <li>
-              <a onClick={handleHome} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" >
+              <button onClick={() => handleNavigate("/")} className="hover:text-blue-600">
                 Home
-              </a>
+              </button>
             </li>
             <li>
-              <a  onClick={handleCreateProblem} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
+              <button onClick={() => handleNavigate("/create")} className="hover:text-blue-600">
                 Create
-              </a>
+              </button>
             </li>
             <li>
-              <a onClick={handleCompiler} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
+              <button onClick={() => handleNavigate("/submission")} className="hover:text-blue-600">
                 Compiler
-              </a>
+              </button>
             </li>
             <li>
-              <a onClick={handleLeaderboard} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100">
+              <button onClick={() => handleNavigate("/leaderboard")} className="hover:text-blue-600">
                 Leaderboard
-              </a>
+              </button>
             </li>
             {user && (
               <li>
-                <a onClick={handleLogout} className="block py-2 px-3 text-gray-900 rounded-sm hover:bg-gray-100" >
+                <button onClick={handleLogout} className="hover:text-red-600">
                   Logout
-                </a>
+                </button>
               </li>
             )}
           </ul>
+
+          <div className="relative">
+            {user ? (
+              <>
+                <button
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  className="flex items-center space-x-2 text-sm focus:outline-none"
+                >
+                  <UserCircleIcon className="w-8 h-8 text-black" />
+                  <span className="text-sm font-medium text-black">
+                    {user.firstname}
+                  </span>
+                </button>
+
+                <AnimatePresence>
+                  {dropdownOpen && (
+                    <motion.div
+                      ref={dropdownRef}
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.2 }}
+                      className="absolute right-0 mt-3 w-64 bg-white rounded-xl shadow-lg z-50 border border-gray-200"
+                    >
+                      <div className="px-5 py-4">
+                        <p className="text-lg font-semibold text-gray-800">
+                          {user.firstname} {user.lastname}
+                        </p>
+                        <p className="text-sm text-gray-500 truncate mt-1">
+                          {user.email}
+                        </p>
+                      </div>
+                      <div className="border-t border-gray-100">
+                        <button
+                          onClick={handleLogout}
+                          className="w-full text-left px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors duration-200 rounded-b-xl"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            ) : (
+              <button
+                className="text-sm bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                onClick={() => handleNavigate("/login")}
+              >
+                Login
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </nav>
