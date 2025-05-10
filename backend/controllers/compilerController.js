@@ -1,12 +1,206 @@
+const Problem = require("../model/Problem");  
+const TestCase = require("../model/TestCase");
+const Submission = require("../model/Submission");
+const Leaderboard = require("../model/Leaderboard");
 const fs = require("fs");
 const path = require("path");
 const { v4: uuidv4 } = require("uuid");
 const { exec, execSync } = require("child_process");
-const Submission = require("../model/Submission");
-const TestCase = require("../model/TestCase");
 
+exports.submitCode = async (req, res) => {
+  const { language, code, problemId, userId } = req.body;
+
+  try {
+    // 1. Verify the problem exists
+    const problem = await Problem.findById(problemId);
+    if (!problem) {
+      return res.status(404).json({ 
+        error: "Problem not found",
+        status: "ERROR" 
+      });
+    }
+
+    // 2. Verify test cases exist
+    if (!problem.testCases || problem.testCases.length === 0) {
+      return res.status(400).json({ 
+        error: "No test cases found for this problem",
+        status: "ERROR" 
+      });
+    }
+
+    // 3. Generate code file
+    const filePath = await generateFile(language, code);
+
+    const results = [];
+    let verdict = "Accepted";
+    let totalTestCases = problem.testCases.length;
+    let passedTestCases = 0;
+    let executionTime = 0; // Track total execution time
+    let memoryUsed = 0; // Track memory usage
+
+    // 4. Execute against each test case
+    for (const testCase of problem.testCases) {
+      const caseResult = {
+        input: testCase.input,
+        expectedOutput: testCase.expectedOutput,
+        userOutput: "",
+        passed: false,
+        errorType: null,
+        executionTime: 0,
+        memoryUsage: 0
+      };
+
+      try {
+        const inputFile = await generateInputFile(testCase.input);
+        let userOutput;
+        const startTime = process.hrtime();
+
+        // Execute based on language
+        if (language === "cpp") {
+          userOutput = await executeCpp(filePath, inputFile);
+        } else if (language === "java") {
+          userOutput = await executeJava(filePath, inputFile);
+        } else if (language === "python") {
+          userOutput = await executePython(filePath, inputFile);
+        }
+
+        const diffTime = process.hrtime(startTime);
+        caseResult.executionTime = diffTime[0] * 1000 + diffTime[1] / 1000000; // in ms
+        executionTime += caseResult.executionTime;
+
+        userOutput = userOutput.trim();
+        caseResult.userOutput = userOutput;
+        caseResult.passed = userOutput === testCase.expectedOutput.trim();
+
+        if (caseResult.passed) {
+          passedTestCases++;
+        } else {
+          verdict = "Wrong Answer";
+        }
+      } catch (err) {
+        verdict = "Runtime Error";
+        caseResult.errorType = "Runtime Error";
+        caseResult.userOutput = err.error || err.stderr || "Runtime Error";
+      }
+
+      results.push(caseResult);
+    }
+
+    // Calculate average execution time and memory
+    executionTime = executionTime / totalTestCases;
+
+    // 5. Save submission
+    const submission = new Submission({
+      userId,
+      problemId,
+      language,
+      code,
+      verdict,
+      executionTime,
+      memoryUsed,
+      testResults: results,
+      timestamp: new Date()
+    });
+
+    await submission.save();
+
+    // 6. Enhanced leaderboard update
+    if (verdict === "Accepted") {
+      const problemPoints = problem.difficulty === "hard" ? 20 : 
+                          problem.difficulty === "medium" ? 15 : 10;
+      
+      await Leaderboard.findOneAndUpdate(
+        { userId },
+        { 
+          $inc: { 
+            score: problemPoints,
+            solvedCount: 1,
+            totalExecutionTime: executionTime
+          },
+          $addToSet: { solvedProblems: problemId },
+          $min: { firstSolvedTimestamp: new Date() } // Track when they first solved it
+        },
+        { upsert: true, new: true }
+      );
+    } else {
+      // Track failed attempts (for potential penalty or analytics)
+      await Leaderboard.findOneAndUpdate(
+        { userId },
+        { $inc: { attemptedCount: 1 } },
+        { upsert: true }
+      );
+    }
+
+    // 7. Return response
+    res.json({ 
+      verdict,
+      testResults: results,
+      passedTestCases,
+      totalTestCases,
+      executionTime,
+      memoryUsed,
+      status: "SUCCESS" 
+    });
+
+  } catch (error) {
+    console.error("Error in Submitting Code:", error);
+    const message = error.error || error.stderr || error.message || "Internal Server Error";
+    res.status(500).json({ 
+      error: message, 
+      status: "ERROR" 
+    });
+  }
+};
+
+// New function to get leaderboard
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const leaderboard = await Leaderboard.aggregate([
+      {
+        $lookup: {
+          from: "users",
+          localField: "userId",
+          foreignField: "_id",
+          as: "user"
+        }
+      },
+      { $unwind: "$user" },
+      {
+        $project: {
+          _id: 0,
+          userId: 1,
+          username: "$user.username",
+          score: 1,
+          solvedCount: 1,
+          attemptedCount: 1,
+          efficiency: {
+            $cond: [
+              { $eq: ["$attemptedCount", 0] },
+              0,
+              { $divide: ["$solvedCount", "$attemptedCount"] }
+            ]
+          }
+        }
+      },
+      { $sort: { score: -1, solvedCount: -1, efficiency: -1 } },
+      { $limit: 100 }
+    ]);
+
+    res.json({ 
+      leaderboard,
+      status: "SUCCESS" 
+    });
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    res.status(500).json({ 
+      error: "Failed to fetch leaderboard",
+      status: "ERROR" 
+    });
+  }
+};
+// compilerController.js
 exports.runCode = async (req, res) => {
-  const { language, code, input, problemId, userId } = req.body;
+  const { language, code, input } = req.body;
 
   try {
     // Generate file from code input
@@ -24,56 +218,11 @@ exports.runCode = async (req, res) => {
       return res.status(400).json({ error: "Unsupported language", status: "ERROR" });
     }
 
-    let verdict = "Accepted";
-
-    // Fetch test cases for the given problem
-    const testCases = await TestCase.find({ problemId });
-
-    // Iterate over the test cases to compare output
-    for (const testCase of testCases) {
-      console.log("controller",testCase);
-      const inputFile = await generateInputFile(testCase.input);
-      let expectedOutput = testCase.expectedOutput.trim();
-      let userOutput;
-
-      try {
-        if (language === "cpp") userOutput = await executeCpp(filePath, inputFile);
-        else if (language === "java") userOutput = await executeJava(filePath, inputFile);
-        else if (language === "python") userOutput = await executePython(filePath, inputFile);
-      } catch (err) {
-        verdict = "Runtime Error";
-        break;
-      }
-
-      console.log("Test Case Input:", testCase.input);
-      console.log("Expected Output:", expectedOutput);
-      console.log("User Output:", userOutput);
-
-      // Check if the output matches the expected output
-      if (userOutput.trim() !== expectedOutput) {
-        verdict = "Wrong Answer";
-        break;
-      }
-    }
-
-    // Create a submission record
-    const submission = new Submission({
-      userId,
-      problemId,
-      language,
-      code,
-      input,
-      output,
-      verdict,
-    });
-
-    await submission.save();
-
-    // Return the response
-    res.json({ output, verdict, status: "SUCCESS" });
+    // Return just the output for Run button
+    res.json({ output, status: "SUCCESS" });
   } catch (error) {
     console.log("Error in Running Code", error);
-    const message = error.error && typeof error.error === 'string' ? error.error : "Internal Server Error";
+    const message = error.error || error.stderr || "Internal Server Error";
     res.status(500).json({ error: message, status: "ERROR" });
   }
 };

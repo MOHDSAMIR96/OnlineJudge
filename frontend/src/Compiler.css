@@ -57,4 +57,136 @@
   .output-container {
     animation: fadeOutput 1s ease-in-out;
   }
+
+  /* Compiler.css */
+.compiler-container {
+  display: flex;
+  height: 100vh;
+}
+
+.problem-section {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  background: #f5f5f5;
+}
+
+.editor-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ddd;
+}
+
+.tabs {
+  display: flex;
+  margin: 20px 0;
+}
+
+.tabs button {
+  padding: 10px 20px;
+  background: #eee;
+  border: none;
+  cursor: pointer;
+}
+
+.tabs button.active {
+  background: #ddd;
+  font-weight: bold;
+}
+
+.test-cases, .results {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.test-case {
+  margin-bottom: 15px;
+}
+
+.test-case pre {
+  background: #f8f8f8;
+  padding: 10px;
+  border-radius: 3px;
+}
+
+.verdict {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.verdict.success {
+  background: #d4edda;
+  color: #155724;
+}
+
+.verdict.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.test-result {
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 3px;
+}
+
+.test-result.passed {
+  background: #d4edda;
+}
+
+.test-result.failed {
+  background: #f8d7da;
+}
+
+.editor-header {
+  padding: 10px;
+  background: #1e1e1e;
+}
+
+.editor-footer {
+  padding: 15px;
+  background: #f5f5f5;
+}
+
+.custom-input {
+  margin-bottom: 15px;
+}
+
+.custom-input textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  font-family: monospace;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.buttons button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.buttons button:first-child {
+  background: #e9ecef;
+}
+
+.buttons button:last-child {
+  background: #007bff;
+  color: white;
+}
+
+.buttons button.running, .buttons button.submitting {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
   

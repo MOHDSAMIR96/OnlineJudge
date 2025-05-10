@@ -2,6 +2,7 @@ const User = require('../model/User');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+
 exports.registerUser = async (req, res) => {
 try{
     // get all the data from the request body/frontend/ui/web
@@ -71,7 +72,16 @@ try {
 
      // Store token in the user object
       user.token = token;
-  
+
+    // Prepare response
+    const userResponse = {
+      _id: user._id,
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      token
+  };
+
       // remove password from the user object before sending it to the client
       user.password = undefined;
   
@@ -79,7 +89,7 @@ try {
     res.status(200).json({
         message: "User logged in successfully",
         status: true,
-        user,
+        user: userResponse ,
       });
     } catch (error) {
       console.log("Error in login routes", error);
@@ -91,15 +101,15 @@ exports.getUserInfo = async (req, res) => {
     try {
       const { id } = req.params;
   
-      const user = await User.findById(id);
+      const user = await User.findById(id).select('-password');
   
       if (!user) {
-        return res.status(404).json({ error: "User not found" });
+        return res.status(404).json({ error: "User not found" ,status: false });
       }
   
       user.password = undefined;
   
-      res.status(200).json({ user });
+      res.status(200).json({ user,status: true });
     } catch (error) {
       console.log("Error in Get User Info", error);
       res.status(500).json({ error: "Internal Server Error" });
@@ -108,10 +118,10 @@ exports.getUserInfo = async (req, res) => {
   
   exports.getAllUsers = async (req, res) => {
     try {
-      const users = await User.find({});
-      res.status(200).json({ users });
+      const users = await User.find({}).select('-password');
+      res.status(200).json({ users,  status: true  });
     } catch (error) {
       console.log("Error in Get All Users", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      res.status(500).json({ error: "Internal Server Error" ,  status: false });
     }
   };

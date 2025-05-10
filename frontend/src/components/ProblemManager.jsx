@@ -10,11 +10,14 @@ const ProblemManager = () => {
     description: "",
     input: "",
     output: "",
-    testCases: "",
+    testCases: [{ input: "", expectedOutput: "" }],
     topic: "",
     medium: "",
   });
   const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [testCaseJson, setTestCaseJson] = useState(JSON.stringify([{ input: "", expectedOutput: "" }], null, 2));
 
   useEffect(() => {
     fetchProblems();
@@ -22,10 +25,15 @@ const ProblemManager = () => {
 
   const fetchProblems = async () => {
     try {
+      setLoading(true);
       const response = await axios.get("http://localhost:8000/problems");
       setProblems(response.data.problems);
+      setError("");
     } catch (error) {
       console.error("Error fetching problems", error);
+      setError("Failed to fetch problems. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -33,36 +41,87 @@ const ProblemManager = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleTestCaseChange = (e) => {
+    const value = e.target.value;
+    setTestCaseJson(value);
+    
+    try {
+      const parsed = JSON.parse(value);
+      if (!Array.isArray(parsed)) {
+        throw new Error("Test cases must be an array");
+      }
+      
+      // Validate each test case
+      const validatedCases = parsed.map(tc => ({
+        input: tc.input || "",
+        expectedOutput: tc.expectedOutput || ""
+      }));
+      
+      setFormData(prev => ({
+        ...prev,
+        testCases: validatedCases
+      }));
+      setError("");
+    } catch (err) {
+      setError("Invalid JSON format for test cases");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setError("");
+      
+      // Validate required fields
+      if (!formData.title || !formData.description || !formData.topic || !formData.medium) {
+        throw new Error("All fields are required");
+      }
+
+      // Validate test cases
+      if (formData.testCases.some(tc => !tc.input || !tc.expectedOutput)) {
+        throw new Error("All test cases must have both input and expected output");
+      }
+
+      const payload = {
+        ...formData,
+        testCases: formData.testCases
+      };
+
       if (isEditing) {
         await axios.put(
           `http://localhost:8000/problem/${selectedProblem._id}`,
-          formData
+          payload
         );
       } else {
-        await axios.post("http://localhost:8000/problem", formData);
+        await axios.post("http://localhost:8000/problem", payload);
       }
+      
       resetForm();
       fetchProblems();
     } catch (error) {
       console.error("Error saving problem", error);
+      setError(error.response?.data?.error || error.message || "Failed to save problem");
     }
   };
 
   const handleSelectProblem = (problem) => {
     setSelectedProblem(problem);
     setIsEditing(true);
-    setFormData({ ...problem });
+    setFormData({
+      ...problem,
+      testCases: problem.testCases
+    });
+    setTestCaseJson(JSON.stringify(problem.testCases, null, 2));
   };
 
   const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this problem?")) return;
     try {
       await axios.delete(`http://localhost:8000/problem/${id}`);
       fetchProblems();
     } catch (error) {
       console.error("Error deleting problem", error);
+      setError("Failed to delete problem. Please try again.");
     }
   };
 
@@ -72,12 +131,14 @@ const ProblemManager = () => {
       description: "",
       input: "",
       output: "",
-      testCases: "",
+      testCases: [{ input: "", expectedOutput: "" }],
       topic: "",
       medium: "",
     });
+    setTestCaseJson(JSON.stringify([{ input: "", expectedOutput: "" }], null, 2));
     setIsEditing(false);
     setSelectedProblem(null);
+    setError("");
   };
 
   return (
@@ -87,51 +148,65 @@ const ProblemManager = () => {
           Online Judge - Problem Manager
         </h2>
 
+        {error && (
+          <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6 rounded">
+            {error}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {/* Problem List */}
           <div className="bg-white rounded-xl p-6 shadow-md">
             <h3 className="text-2xl font-bold text-center text-gray-800 mb-4">
               Problems
             </h3>
-            <div className="bg-gray-100 p-3 rounded-lg font-semibold text-gray-700 flex justify-between text-sm">
-              <span className="w-1/4">Title</span>
-              <span className="w-1/4 text-center">Topic</span>
-              <span className="w-1/4 text-center">Medium</span>
-              <span className="w-1/4 text-center">Actions</span>
-            </div>
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-500"></div>
+              </div>
+            ) : (
+              <>
+                <div className="bg-gray-100 p-3 rounded-lg font-semibold text-gray-700 flex justify-between text-sm">
+                  <span className="w-1/4">Title</span>
+                  <span className="w-1/4 text-center">Topic</span>
+                  <span className="w-1/4 text-center">Medium</span>
+                  <span className="w-1/4 text-center">Actions</span>
+                </div>
 
-            <div className="space-y-3 mt-2 max-h-[500px] overflow-y-auto">
-              {problems.length > 0 ? (
-                problems.map((problem) => (
-                  <div
-                    key={problem._id}
-                    className="flex justify-between items-center p-3 bg-gray-50 border rounded-md hover:bg-gray-100 transition-all"
-                  >
-                    <span className="w-1/4 truncate text-sm font-medium">{problem.title}</span>
-                    <span className="w-1/4 text-center text-sm">{problem.topic}</span>
-                    <span className="w-1/4 text-center text-sm">{problem.medium}</span>
-                    <div className="w-1/4 flex justify-center space-x-4">
-                      <button
-                        onClick={() => handleSelectProblem(problem)}
-                        className="text-yellow-500 hover:text-yellow-700"
-                        title="Edit"
+                <div className="space-y-3 mt-2 max-h-[500px] overflow-y-auto">
+                  {problems.length > 0 ? (
+                    problems.map((problem) => (
+                      <div
+                        key={problem._id}
+                        className="flex justify-between items-center p-3 bg-gray-50 border rounded-md hover:bg-gray-100 transition-all"
                       >
-                        <FaEdit size={18} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(problem._id)}
-                        className="text-red-500 hover:text-red-700"
-                        title="Delete"
-                      >
-                        <FaTrash size={18} />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-gray-500">No problems found.</p>
-              )}
-            </div>
+                        <span className="w-1/4 truncate text-sm font-medium">{problem.title}</span>
+                        <span className="w-1/4 text-center text-sm">{problem.topic}</span>
+                        <span className="w-1/4 text-center text-sm">{problem.medium}</span>
+                        <div className="w-1/4 flex justify-center space-x-4">
+                          <button
+                            onClick={() => handleSelectProblem(problem)}
+                            className="text-yellow-500 hover:text-yellow-700"
+                            title="Edit"
+                          >
+                            <FaEdit size={18} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(problem._id)}
+                            className="text-red-500 hover:text-red-700"
+                            title="Delete"
+                          >
+                            <FaTrash size={18} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-center text-gray-500 py-4">No problems found.</p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           {/* Form */}
@@ -140,31 +215,92 @@ const ProblemManager = () => {
               {isEditing ? "Edit Problem" : "Add Problem"}
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
-              {["title", "description", "topic", "input", "output", "testCases"].map((field) => (
-                <textarea
-                  key={field}
-                  name={field}
-                  placeholder={field.charAt(0).toUpperCase() + field.slice(1)}
-                  value={formData[field]}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  name="title"
+                  value={formData.title}
                   onChange={handleChange}
                   className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
                   required
-                  rows={field === "description" ? 3 : 2}
                 />
-              ))}
+              </div>
 
-              <select
-                name="medium"
-                value={formData.medium}
-                onChange={handleChange}
-                className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
-                required
-              >
-                <option value="">Select Difficulty</option>
-                <option value="Easy">Easy</option>
-                <option value="Medium">Medium</option>
-                <option value="Hard">Hard</option>
-              </select>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                  required
+                  rows={4}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sample Input</label>
+                  <textarea
+                    name="input"
+                    value={formData.input}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                    rows={2}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Sample Output</label>
+                  <textarea
+                    name="output"
+                    value={formData.output}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                    rows={2}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Test Cases (JSON array)</label>
+                <textarea
+                  name="testCases"
+                  value={testCaseJson}
+                  onChange={handleTestCaseChange}
+                  className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400 font-mono text-sm"
+                  required
+                  rows={6}
+                  placeholder={`[\n  {\n    "input": "1 2",\n    "expectedOutput": "3"\n  }\n]`}
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+                  <input
+                    name="topic"
+                    value={formData.topic}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                  <select
+                    name="medium"
+                    value={formData.medium}
+                    onChange={handleChange}
+                    className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
+                    required
+                  >
+                    <option value="">Select Difficulty</option>
+                    <option value="Easy">Easy</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Hard">Hard</option>
+                  </select>
+                </div>
+              </div>
 
               <button
                 type="submit"

@@ -1,21 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const testCaseSchema = new mongoose.Schema({
-  problemId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Problem",
-    required: true,
-  },
-  input: {
-    type: String,
-  },
-  expectedOutput: {
-    type: String,
-  },
-  isSample: {
-    type: Boolean,
-    default: false, // true for sample testcases shown to users, false for hidden testcases
-  },
-});
+const TestCaseSchema = new mongoose.Schema({
+  expectedOutput: { type: String, required: true },
+  input: { type: String, required: true },
+  problemId: { type: mongoose.Schema.Types.ObjectId, ref: 'Problem' }
+}, { timestamps: true });
 
-module.exports = mongoose.model("TestCase", testCaseSchema);
+module.exports = mongoose.model('TestCase', TestCaseSchema);

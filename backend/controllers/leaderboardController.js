@@ -1,45 +1,75 @@
 const Leaderboard = require("../model/Leaderboard");
+const User = require("../model/User");
 
-// Create or update a leaderboard entry
+// Update leaderboard when a problem is solved
 exports.updateLeaderboard = async (req, res) => {
-  const { userId, username, score } = req.body;
-
-  if (!userId || !username || score == null) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
   try {
-    let entry = await Leaderboard.findOne({ userId });
-
-    if (entry) {
-      entry.score = score;
-      await entry.save();
-    } else {
-      entry = new Leaderboard({ userId, username, score });
-      await entry.save();
+    const { userId, problemId, scoreToAdd = 10 } = req.body;
+    
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
     }
 
-    res.status(201).json({ message: "Leaderboard updated successfully", entry });
+    const update = {
+      $inc: { score: scoreToAdd },
+      $addToSet: { solvedProblems: problemId },
+      $set: { 
+        firstname: user.firstname,
+        lastSubmission: new Date() 
+      }
+    };
+
+    const updatedEntry = await Leaderboard.findOneAndUpdate(
+      { userId },
+      update,
+      { upsert: true, new: true }
+    );
+    
+    res.json({ success: true, data: updatedEntry });
   } catch (error) {
     console.error("Error updating leaderboard:", error);
-    res.status(500).json({ error: "Failed to update leaderboard" });
+    res.status(500).json({ success: false, error: "Internal server error" });
   }
 };
 
-// Fetch top leaderboard entries
+// Get sorted leaderboard
 exports.getLeaderboard = async (req, res) => {
   try {
-    const topUsers = await Leaderboard.find()
-      .sort({ score: -1 })
-      .limit(50); // Top 50 users
+    const topUsers = await Leaderboard.aggregate([
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'userId',
+          foreignField: '_id',
+          as: 'userDetails'
+        }
+      },
+      { $unwind: '$userDetails' },
+      {
+        $project: {
+          _id: 1,
+          userId: 1,
+          firstname: '$userDetails.firstname',
+          score: 1,
+          solvedCount: { $size: '$solvedProblems' },
+          lastSubmission: 1,
+          profilePic: '$userDetails.profilePic'
+        }
+      },
+      { $sort: { score: -1 } },
+      { $limit: 50 }
+    ]);
 
-    if (!topUsers || topUsers.length === 0) {
-      return res.status(404).json({ error: "No leaderboard entries found" });
-    }
-
-    res.json({ topUsers });
+    res.json({ 
+      success: true,
+      leaderboard: topUsers 
+    });
   } catch (error) {
     console.error("Error fetching leaderboard:", error);
-    res.status(500).json({ error: "Failed to fetch leaderboard" });
+    res.status(500).json({ 
+      success: false,
+      error: "Failed to fetch leaderboard" 
+    });
   }
 };
