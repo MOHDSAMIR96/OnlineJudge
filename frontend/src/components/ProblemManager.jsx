@@ -12,12 +12,15 @@ const ProblemManager = () => {
     output: "",
     testCases: [{ input: "", expectedOutput: "" }],
     topic: "",
-    medium: "",
+    medium: "Easy", // Set default to Easy
+    difficulty: "Easy", // Add difficulty field to match backend
   });
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [testCaseJson, setTestCaseJson] = useState(JSON.stringify([{ input: "", expectedOutput: "" }], null, 2));
+  const [testCaseJson, setTestCaseJson] = useState(
+    JSON.stringify([{ input: "", expectedOutput: "" }], null, 2)
+  );
 
   useEffect(() => {
     fetchProblems();
@@ -38,28 +41,29 @@ const ProblemManager = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleTestCaseChange = (e) => {
     const value = e.target.value;
     setTestCaseJson(value);
-    
+
     try {
       const parsed = JSON.parse(value);
       if (!Array.isArray(parsed)) {
         throw new Error("Test cases must be an array");
       }
-      
+
       // Validate each test case
-      const validatedCases = parsed.map(tc => ({
-        input: tc.input || "",
-        expectedOutput: tc.expectedOutput || ""
+      const validatedCases = parsed.map((tc) => ({
+        input: tc.input ? String(tc.input) : "",
+        expectedOutput: tc.expectedOutput ? String(tc.expectedOutput) : "",
       }));
-      
-      setFormData(prev => ({
+
+      setFormData((prev) => ({
         ...prev,
-        testCases: validatedCases
+        testCases: validatedCases,
       }));
       setError("");
     } catch (err) {
@@ -71,20 +75,36 @@ const ProblemManager = () => {
     e.preventDefault();
     try {
       setError("");
-      
+
       // Validate required fields
-      if (!formData.title || !formData.description || !formData.topic || !formData.medium) {
+      if (
+        !formData.title ||
+        !formData.description ||
+        !formData.topic ||
+        !formData.medium
+      ) {
         throw new Error("All fields are required");
       }
 
       // Validate test cases
-      if (formData.testCases.some(tc => !tc.input || !tc.expectedOutput)) {
-        throw new Error("All test cases must have both input and expected output");
+      if (
+        formData.testCases.length === 0 ||
+        formData.testCases.some((tc) => !tc.input || !tc.expectedOutput)
+      ) {
+        throw new Error(
+          "All test cases must have both input and expected output"
+        );
       }
 
       const payload = {
-        ...formData,
-        testCases: formData.testCases
+        title: formData.title,
+        description: formData.description,
+        input: formData.input,
+        output: formData.output,
+        testCases: formData.testCases,
+        topic: formData.topic,
+        medium: formData.medium,
+        difficulty: formData.medium, // Map medium to difficulty for backend
       };
 
       if (isEditing) {
@@ -95,27 +115,42 @@ const ProblemManager = () => {
       } else {
         await axios.post("http://localhost:8000/problem", payload);
       }
-      
+
       resetForm();
       fetchProblems();
     } catch (error) {
       console.error("Error saving problem", error);
-      setError(error.response?.data?.error || error.message || "Failed to save problem");
+      setError(
+        error.response?.data?.error || error.message || "Failed to save problem"
+      );
     }
   };
 
   const handleSelectProblem = (problem) => {
     setSelectedProblem(problem);
     setIsEditing(true);
+    const testCases = Array.isArray(problem.testCases)
+      ? problem.testCases
+      : typeof problem.testCases === "string"
+      ? JSON.parse(problem.testCases)
+      : [{ input: "", expectedOutput: "" }];
+
     setFormData({
-      ...problem,
-      testCases: problem.testCases
+      title: problem.title,
+      description: problem.description,
+      input: problem.input,
+      output: problem.output,
+      testCases: testCases,
+      topic: problem.topic,
+      medium: problem.difficulty || problem.medium || "Easy",
+      difficulty: problem.difficulty || "Easy",
     });
-    setTestCaseJson(JSON.stringify(problem.testCases, null, 2));
+    setTestCaseJson(JSON.stringify(testCases, null, 2));
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this problem?")) return;
+    if (!window.confirm("Are you sure you want to delete this problem?"))
+      return;
     try {
       await axios.delete(`http://localhost:8000/problem/${id}`);
       fetchProblems();
@@ -133,9 +168,12 @@ const ProblemManager = () => {
       output: "",
       testCases: [{ input: "", expectedOutput: "" }],
       topic: "",
-      medium: "",
+      medium: "Easy",
+      difficulty: "Easy",
     });
-    setTestCaseJson(JSON.stringify([{ input: "", expectedOutput: "" }], null, 2));
+    setTestCaseJson(
+      JSON.stringify([{ input: "", expectedOutput: "" }], null, 2)
+    );
     setIsEditing(false);
     setSelectedProblem(null);
     setError("");
@@ -169,7 +207,7 @@ const ProblemManager = () => {
                 <div className="bg-gray-100 p-3 rounded-lg font-semibold text-gray-700 flex justify-between text-sm">
                   <span className="w-1/4">Title</span>
                   <span className="w-1/4 text-center">Topic</span>
-                  <span className="w-1/4 text-center">Medium</span>
+                  <span className="w-1/4 text-center">Difficulty</span>
                   <span className="w-1/4 text-center">Actions</span>
                 </div>
 
@@ -180,9 +218,15 @@ const ProblemManager = () => {
                         key={problem._id}
                         className="flex justify-between items-center p-3 bg-gray-50 border rounded-md hover:bg-gray-100 transition-all"
                       >
-                        <span className="w-1/4 truncate text-sm font-medium">{problem.title}</span>
-                        <span className="w-1/4 text-center text-sm">{problem.topic}</span>
-                        <span className="w-1/4 text-center text-sm">{problem.medium}</span>
+                        <span className="w-1/4 truncate text-sm font-medium">
+                          {problem.title}
+                        </span>
+                        <span className="w-1/4 text-center text-sm">
+                          {problem.topic}
+                        </span>
+                        <span className="w-1/4 text-center text-sm">
+                          {problem.difficulty || problem.medium}
+                        </span>
                         <div className="w-1/4 flex justify-center space-x-4">
                           <button
                             onClick={() => handleSelectProblem(problem)}
@@ -202,7 +246,9 @@ const ProblemManager = () => {
                       </div>
                     ))
                   ) : (
-                    <p className="text-center text-gray-500 py-4">No problems found.</p>
+                    <p className="text-center text-gray-500 py-4">
+                      No problems found.
+                    </p>
                   )}
                 </div>
               </>
@@ -216,7 +262,9 @@ const ProblemManager = () => {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Title*
+                </label>
                 <input
                   name="title"
                   value={formData.title}
@@ -227,7 +275,9 @@ const ProblemManager = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Description*
+                </label>
                 <textarea
                   name="description"
                   value={formData.description}
@@ -240,7 +290,9 @@ const ProblemManager = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sample Input</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sample Input
+                  </label>
                   <textarea
                     name="input"
                     value={formData.input}
@@ -250,7 +302,9 @@ const ProblemManager = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Sample Output</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Sample Output
+                  </label>
                   <textarea
                     name="output"
                     value={formData.output}
@@ -262,7 +316,9 @@ const ProblemManager = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Test Cases (JSON array)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Test Cases (JSON array)*
+                </label>
                 <textarea
                   name="testCases"
                   value={testCaseJson}
@@ -270,13 +326,19 @@ const ProblemManager = () => {
                   className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400 font-mono text-sm"
                   required
                   rows={6}
-                  placeholder={`[\n  {\n    "input": "1 2",\n    "expectedOutput": "3"\n  }\n]`}
+                  placeholder={`[\n  {\n    "input": "4\\n12345\\n3203\\n1000\\n57",\n    "expectedOutput": "54321\\n3023\\n1\\n75"\n  },\n  {\n    "input": "1\\n1000",\n    "expectedOutput": "1"\n  }\n]`}
                 />
+                <p className="text-xs text-gray-500 mt-1">
+                  Format: Array of objects with "input" and "expectedOutput"
+                  properties
+                </p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Topic</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Topic*
+                  </label>
                   <input
                     name="topic"
                     value={formData.topic}
@@ -286,7 +348,9 @@ const ProblemManager = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Difficulty</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Difficulty*
+                  </label>
                   <select
                     name="medium"
                     value={formData.medium}
@@ -294,7 +358,6 @@ const ProblemManager = () => {
                     className="w-full p-3 border rounded-md focus:ring-2 focus:ring-purple-400"
                     required
                   >
-                    <option value="">Select Difficulty</option>
                     <option value="Easy">Easy</option>
                     <option value="Medium">Medium</option>
                     <option value="Hard">Hard</option>
@@ -302,21 +365,23 @@ const ProblemManager = () => {
                 </div>
               </div>
 
-              <button
-                type="submit"
-                className="w-full bg-green-600 text-white py-3 rounded-md font-semibold text-lg hover:bg-green-700 transition-all"
-              >
-                {isEditing ? "Update Problem" : "Add Problem"}
-              </button>
-              {isEditing && (
+              <div className="flex space-x-4">
                 <button
-                  type="button"
-                  onClick={resetForm}
-                  className="w-full bg-gray-500 text-white py-3 rounded-md font-semibold text-lg hover:bg-gray-600 mt-2"
+                  type="submit"
+                  className="flex-1 bg-green-600 text-white py-3 rounded-md font-semibold text-lg hover:bg-green-700 transition-all"
                 >
-                  Cancel
+                  {isEditing ? "Update Problem" : "Add Problem"}
                 </button>
-              )}
+                {isEditing && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="flex-1 bg-gray-500 text-white py-3 rounded-md font-semibold text-lg hover:bg-gray-600 transition-all"
+                  >
+                    Cancel
+                  </button>
+                )}
+              </div>
             </form>
           </div>
         </div>

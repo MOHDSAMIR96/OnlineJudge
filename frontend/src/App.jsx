@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 
 function useAuth() {
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -27,47 +28,70 @@ function useAuth() {
         console.error("Failed to parse user data", err);
       }
     }
+    setLoading(false);
   }, []);
 
-  return user;
+  return { user, loading };
 }
 
+function ProtectedRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+}
 function AppContent() {
   const location = useLocation();
-  const user = useAuth();
+  const { user, loading } = useAuth(); // Destructure loading from useAuth
   const hideNavbarRoutes = ["/login", "/register"];
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
 
   return (
     <>
-      {!hideNavbarRoutes.includes(location.pathname) && <Navbar />}
+      {!hideNavbarRoutes.includes(location.pathname) && <Navbar user={user} />}
 
       <Routes>
-        
-        {/* Protected routes */}
-        
-        <Route 
-          path="/problem/:id" 
-          element={user ? <Compiler userId={user._id} /> : (
-            <Navigate 
-              to="/login" 
-              state={{ 
-                from: location.pathname,
-                message: "Please login to access this problem" 
-              }} 
-              replace 
-            />
-          )} 
-        />
-        
-        
         {/* Public routes */}
-         {/* Public routes */}
-         <Route path="/login" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-         <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/submission" element={<Submission />} />
-        <Route path="/create" element={<ProblemManager />} />
+
+        {/* Protected routes */}
+        <Route
+          path="/problem/:id"
+          element={
+            <ProtectedRoute>
+              <Compiler userId={user?._id} /> {/* Safe access with optional chaining */}
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/submission"
+          element={
+            <ProtectedRoute>
+              <Submission userId={user?._id} /> {/* Pass userId if needed */}
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create"
+          element={
+            <ProtectedRoute>
+              <ProblemManager userId={user?._id} /> {/* Pass userId if needed */}
+            </ProtectedRoute>
+          }
+        />
       </Routes>
     </>
   );

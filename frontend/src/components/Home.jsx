@@ -15,7 +15,7 @@ const Home = () => {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
   }, []);
-  
+
   useEffect(() => {
     let isMounted = true;
 
@@ -48,20 +48,21 @@ const Home = () => {
       alert("Invalid problem ID");
       return;
     }
-    
+
     // Check if user is logged in by trying to get the token
-    const token = localStorage.getItem('token');
-    
+    const token = localStorage.getItem("token");
+    console.log("token found in home page", token);
+
     if (token) {
       // User is logged in, navigate to problem page
       navigate(`/problem/${problemId}`);
     } else {
       // User not logged in, redirect to login with return URL
-      navigate('/login', { 
-        state: { 
+      navigate("/login", {
+        state: {
           from: `/problem/${problemId}`,
-          message: "Please login to solve this problem" 
-        } 
+          message: "Please login to solve this problem",
+        },
       });
     }
   };
@@ -98,7 +99,9 @@ const Home = () => {
                       index % 2 === 0 ? "bg-white" : "bg-gray-100"
                     } hover:bg-blue-100`}
                   >
-                    <span className="truncate font-medium">{problem.title}</span>
+                    <span className="truncate font-medium">
+                      {problem.title}
+                    </span>
                     <span className="text-center hidden md:block">
                       {problem.topic || "N/A"}
                     </span>

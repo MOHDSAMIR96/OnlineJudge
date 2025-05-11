@@ -31,8 +31,14 @@ const Register = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 animate-gradient px-4">
       <div className="bg-white shadow-2xl rounded-2xl p-8 w-full max-w-md">
-        <img src="/images/coding_login.jpg" alt="Register" className="w-full h-40 object-cover rounded-md mb-5" />
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-5">Create Account</h2>
+        <img
+          src="/images/coding_login.jpg"
+          alt="Register"
+          className="w-full h-40 object-cover rounded-md mb-5"
+        />
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-5">
+          Create Account
+        </h2>
         {error && <p className="text-red-500 text-center mb-3">{error}</p>}
         <form onSubmit={handleRegister} className="space-y-4">
           <input

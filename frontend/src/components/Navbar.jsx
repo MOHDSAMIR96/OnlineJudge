@@ -46,28 +46,40 @@ const Navbar = () => {
           className="flex items-center space-x-3"
         >
           <img src="/images/coding_login-logo.png" className="h-8" alt="Logo" />
-          <span className="text-2xl font-bold dark:text-white">Coding</span>
+          <span className="text-2xl font-bold dark:text-white">SkillJudge</span>
         </button>
 
         <div className="flex items-center space-x-6">
           <ul className="hidden md:flex space-x-6 font-medium text-gray-800">
             <li>
-              <button onClick={() => handleNavigate("/")} className="hover:text-blue-600">
+              <button
+                onClick={() => handleNavigate("/")}
+                className="hover:text-blue-600"
+              >
                 Home
               </button>
             </li>
             <li>
-              <button onClick={() => handleNavigate("/create")} className="hover:text-blue-600">
+              <button
+                onClick={() => handleNavigate("/create")}
+                className="hover:text-blue-600"
+              >
                 Create
               </button>
             </li>
             <li>
-              <button onClick={() => handleNavigate("/submission")} className="hover:text-blue-600">
+              <button
+                onClick={() => handleNavigate("/submission")}
+                className="hover:text-blue-600"
+              >
                 Compiler
               </button>
             </li>
             <li>
-              <button onClick={() => handleNavigate("/leaderboard")} className="hover:text-blue-600">
+              <button
+                onClick={() => handleNavigate("/leaderboard")}
+                className="hover:text-blue-600"
+              >
                 Leaderboard
               </button>
             </li>

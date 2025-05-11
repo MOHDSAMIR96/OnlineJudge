@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
@@ -6,7 +6,7 @@ import "../Compiler.css";
 
 const Compiler = ({ userId }) => {
   const { id: problemId } = useParams();
-  const [language, setLanguage] = useState("cpp");
+  const [language, setLanguage] = useState("java");
   const [code, setCode] = useState("");
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
@@ -18,55 +18,48 @@ const Compiler = ({ userId }) => {
   const [testResults, setTestResults] = useState([]);
   const [compilationError, setCompilationError] = useState("");
   const [activeTab, setActiveTab] = useState("testcase");
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   const API_BASE_URL = "http://localhost:8000";
 
-  useEffect(() => {
-    const fetchProblem = async () => {
-      try {
-        setLoading(true);
-        const res = await axios.get(`${API_BASE_URL}/problem/${problemId}`);
-        if (res.data?.problem) {
-          const problemData = res.data.problem;
-          // Handle test cases safely
-          if (problemData.testCases && typeof problemData.testCases === "string") {
-            try {
-              problemData.testCases = JSON.parse(problemData.testCases);
-            } catch (err) {
-              console.error("Failed to parse test cases:", err);
-              problemData.testCases = [];
-            }
-          } else if (!Array.isArray(problemData.testCases)) {
+  const fetchProblem = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE_URL}/problem/${problemId}`);
+      if (res.data?.problem) {
+        const problemData = res.data.problem;
+        if (
+          problemData.testCases &&
+          typeof problemData.testCases === "string"
+        ) {
+          try {
+            problemData.testCases = JSON.parse(problemData.testCases);
+          } catch (err) {
+            console.error("Failed to parse test cases:", err);
             problemData.testCases = [];
           }
-          setProblem(problemData);
+        } else if (!Array.isArray(problemData.testCases)) {
+          problemData.testCases = [];
         }
-      } catch (err) {
-        console.error("Failed to load problem:", err);
-      } finally {
-        setLoading(false);
+        setProblem(problemData);
       }
-    };
-
-    fetchProblem();
+    } catch (err) {
+      console.error("Failed to load problem:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [problemId]);
 
   useEffect(() => {
-    const defaultCode = getDefaultCode(language);
-    setCode(defaultCode);
-    setOutput("");
-    setVerdict("");
-    setTestResults([]);
-    setCompilationError("");
-    setActiveTab("testcase");
-  }, [language, problem]);
+    fetchProblem();
+  }, [fetchProblem]);
 
-  const getDefaultCode = (lang) => {
-    if (!problem) return "";
-    
-    switch (lang) {
-      case "cpp":
-        return `#include <iostream>
+  const getDefaultCode = useCallback(
+    (lang) => {
+      if (!problem) return "";
+
+      const templates = {
+        cpp: `#include <iostream>
 using namespace std;
 
 int main() {
@@ -74,9 +67,8 @@ int main() {
   // Read input from cin
   // Write output to cout
   return 0;
-}`;
-      case "java":
-        return `import java.util.*;
+}`,
+        java: `import java.util.*;
 
 public class Main {
   public static void main(String[] args) {
@@ -85,15 +77,25 @@ public class Main {
     // Read input using sc.nextInt(), sc.next(), etc.
     // Write output using System.out.println()
   }
-}`;
-      case "python":
-        return `# Your code here
+}`,
+        python: `# Your code here
 # Read input using input()
-# Write output using print()`;
-      default:
-        return "";
-    }
-  };
+# Write output using print()`,
+      };
+
+      return templates[lang] || "";
+    },
+    [problem]
+  );
+
+  useEffect(() => {
+    setCode(getDefaultCode(language));
+    setOutput("");
+    setVerdict("");
+    setTestResults([]);
+    setCompilationError("");
+    setActiveTab("testcase");
+  }, [language, problem, getDefaultCode]);
 
   const handleRun = async () => {
     if (!code.trim()) {
@@ -106,13 +108,13 @@ public class Main {
       setVerdict("");
       setCompilationError("");
       setActiveTab("result");
-      
+
       const { data } = await axios.post(`${API_BASE_URL}/run`, {
         language,
         code,
         input,
       });
-      
+
       if (data.error) {
         setOutput(data.error);
         setCompilationError(data.error);
@@ -122,9 +124,8 @@ public class Main {
         setVerdict("Executed Successfully");
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.error || 
-                      error.message || 
-                      "Execution failed";
+      const errorMsg =
+        error.response?.data?.error || error.message || "Execution failed";
       setOutput(`Error: ${errorMsg}`);
       setVerdict("Runtime Error");
       console.error("Execution error:", error);
@@ -138,12 +139,10 @@ public class Main {
       setOutput("Error: Code cannot be empty");
       return;
     }
-  
+
     if (!userId) {
       setOutput("Error: Please login to submit your code");
       setVerdict("Authentication Required");
-      // Optionally redirect to login page
-      // navigate('/login');
       return;
     }
 
@@ -167,30 +166,37 @@ public class Main {
         setOutput(data.error);
       } else {
         setVerdict(data.verdict || "No verdict");
-        
-        // Ensure testResults is always an array
         const results = Array.isArray(data.testResults) ? data.testResults : [];
         setTestResults(results);
-        
+
         if (data.verdict === "Accepted") {
           setOutput(`All test cases passed! 🎉`);
         } else {
-          const firstFailure = results.find(r => !r.passed);
+          const firstFailure = results.find((r) => !r.passed);
           if (firstFailure) {
-            setOutput(`Test Case Failed:\nInput: ${firstFailure.input || ''}\nExpected: ${firstFailure.expectedOutput || ''}\nGot: ${firstFailure.userOutput || ''}`);
+            setOutput(
+              `Test Case Failed:\nInput: ${
+                firstFailure.input || ""
+              }\nExpected: ${firstFailure.expectedOutput || ""}\nGot: ${
+                firstFailure.userOutput || ""
+              }`
+            );
           }
         }
       }
     } catch (error) {
-      const errorMsg = error.response?.data?.error || 
-                      error.message || 
-                      "Submission failed";
+      const errorMsg =
+        error.response?.data?.error || error.message || "Submission failed";
       setVerdict("Error");
       setOutput(`Error: ${errorMsg}`);
       console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const toggleCustomInput = () => {
+    setShowCustomInput(!showCustomInput);
   };
 
   if (loading) {
@@ -208,15 +214,15 @@ public class Main {
         <div className="problem-description">
           <div dangerouslySetInnerHTML={{ __html: problem.description }} />
         </div>
-        
+
         <div className="tabs">
-          <button 
+          <button
             className={activeTab === "testcase" ? "active" : ""}
             onClick={() => setActiveTab("testcase")}
           >
             Test Cases
           </button>
-          <button 
+          <button
             className={activeTab === "result" ? "active" : ""}
             onClick={() => setActiveTab("result")}
           >
@@ -227,25 +233,25 @@ public class Main {
         {activeTab === "testcase" && (
           <div className="test-cases">
             <h3>Sample Test Cases</h3>
-            {Array.isArray(problem.testCases) && problem.testCases.slice(0, 2).map((testCase, index) => (
-              <div key={index} className="test-case">
-                <div className="input">
-                  <h4>Input:</h4>
-                  <pre>{testCase.input}</pre>
-                </div>
-                <div className="output">
-                  <h4>Expected Output:</h4>
-                  <pre>{testCase.expectedOutput}</pre>
-                </div>
-              </div>
-            ))}
+            <div className="input">
+              <h4>Input:</h4>
+              <pre>{problem.input}</pre>
+            </div>
+            <div className="output">
+              <h4>Expected Output:</h4>
+              <pre>{problem.output}</pre>
+            </div>
           </div>
         )}
 
         {activeTab === "result" && (
           <div className="results">
             {verdict && (
-              <div className={`verdict ${verdict.toLowerCase().includes("accept") ? "success" : "error"}`}>
+              <div
+                className={`verdict ${
+                  verdict.toLowerCase().includes("accept") ? "success" : "error"
+                }`}
+              >
                 {verdict}
               </div>
             )}
@@ -259,8 +265,16 @@ public class Main {
               <div className="test-results">
                 <h4>Test Results:</h4>
                 {testResults.map((result, index) => (
-                  <div key={index} className={`test-result ${result.passed ? "passed" : "failed"}`}>
-                    <div>Test Case {index + 1}: {result.passed ? "✓ Passed" : "✗ Failed"}</div>
+                  <div
+                    key={index}
+                    className={`test-result ${
+                      result.passed ? "passed" : "failed"
+                    }`}
+                  >
+                    <div>
+                      Test Case {index + 1}:{" "}
+                      {result.passed ? "✓ Passed" : "✗ Failed"}
+                    </div>
                     {!result.passed && (
                       <>
                         <div>Input: {result.input}</div>
@@ -283,8 +297,8 @@ public class Main {
             onChange={(e) => setLanguage(e.target.value)}
             disabled={isSubmitting || isRunning}
           >
-            <option value="cpp">C++</option>
             <option value="java">Java</option>
+            <option value="cpp">C++</option>
             <option value="python">Python</option>
           </select>
         </div>
@@ -298,19 +312,28 @@ public class Main {
           options={{
             minimap: { enabled: false },
             fontSize: 14,
-            readOnly: isSubmitting || isRunning
+            readOnly: isSubmitting || isRunning,
           }}
         />
 
         <div className="editor-footer">
-          <div className="custom-input">
-            <h4>Custom Input</h4>
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              disabled={isSubmitting || isRunning}
-            />
+          <div className="custom-input-toggle">
+            <button onClick={toggleCustomInput}>
+              {showCustomInput ? "Hide Custom Input" : "▼ Custom Input"}
+            </button>
           </div>
+
+          {showCustomInput && (
+            <div className="custom-input">
+              <h4>Custom Input</h4>
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                disabled={isSubmitting || isRunning}
+                placeholder="Enter custom input here"
+              />
+            </div>
+          )}
 
           <div className="buttons">
             <button

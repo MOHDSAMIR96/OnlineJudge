@@ -189,4 +189,35 @@
   opacity: 0.7;
   cursor: not-allowed;
 }
-  
+ 
+.custom-input-toggle {
+  margin-bottom: 10px;
+}
+
+.custom-input-toggle button {
+  background: none;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 5px 0;
+}
+
+.custom-input-toggle button:hover {
+  color: #333;
+  text-decoration: underline;
+}
+
+.custom-input {
+  margin-bottom: 15px;
+}
+
+.custom-input textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: monospace;
+  resize: vertical;
+}

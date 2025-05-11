@@ -4,8 +4,8 @@ import axios from "axios";
 import "../Submission.css"; // 👈 CSS for background animation
 
 function Submission() {
-  const [language, setLanguage] = useState("cpp");
-  const [code, setCode] = useState(getDefaultCode("cpp"));
+  const [language, setLanguage] = useState("java");
+  const [code, setCode] = useState(getDefaultCode("java"));
   const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
 
@@ -89,8 +89,8 @@ print(num1 + num2)`;
                 onChange={handleLanguageChange}
                 className="border border-gray-300 rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                <option value="cpp">C++</option>
                 <option value="java">Java</option>
+                <option value="cpp">C++</option>
                 <option value="python">Python</option>
               </select>
             </div>
@@ -123,7 +123,9 @@ print(num1 + num2)`;
           {/* Right Side - Input and Output */}
           <div className="flex-1 flex flex-col gap-6">
             <div>
-              <h2 className="text-lg font-semibold mb-2 text-gray-800">Input</h2>
+              <h2 className="text-lg font-semibold mb-2 text-gray-800">
+                Input
+              </h2>
               <textarea
                 rows="6"
                 value={input}
@@ -134,7 +136,9 @@ print(num1 + num2)`;
             </div>
 
             <div>
-              <h2 className="text-lg font-semibold mb-2 text-gray-800">Output</h2>
+              <h2 className="text-lg font-semibold mb-2 text-gray-800">
+                Output
+              </h2>
               <div className="w-full min-h-[150px] p-3 rounded-md bg-black text-green-400 font-mono overflow-y-auto whitespace-pre-wrap">
                 {output || "Output will appear here..."}
               </div>

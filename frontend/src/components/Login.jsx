@@ -31,8 +31,8 @@ const Login = () => {
       console.error("Login error:", err);
       setError(
         err.response?.data?.error ||
-        err.message ||
-        "Login failed. Please try again."
+          err.message ||
+          "Login failed. Please try again."
       );
     } finally {
       setIsLoading(false);
@@ -61,7 +61,10 @@ const Login = () => {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Email
             </label>
             <input
@@ -77,7 +80,10 @@ const Login = () => {
           </div>
 
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="password"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Password
             </label>
             <input
