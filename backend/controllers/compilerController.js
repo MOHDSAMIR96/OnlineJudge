@@ -228,7 +228,8 @@ exports.getLeaderboard = async (req, res) => {
         $project: {
           _id: 0,
           userId: 1,
-          username: "$user.username",
+          firstname:"user.firstname",
+          lastname: "$user.lastname",
           score: 1,
           solvedCount: 1,
           attemptedCount: 1,

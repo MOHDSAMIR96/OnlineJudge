@@ -1,5 +1,4 @@
 const Problem = require("../model/Problem");
-const TestCase = require("../model/TestCase");
 
 // Add Problem Controller
 exports.addProblem = async (req, res) => {

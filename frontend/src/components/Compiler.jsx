@@ -210,7 +210,7 @@ public class Main {
   return (
     <div className="compiler-container">
       <div className="problem-section">
-        <h1>{problem.title}</h1>
+        <h1 className="problem-title">{problem.title}</h1>
         <div className="problem-description">
           <div dangerouslySetInnerHTML={{ __html: problem.description }} />
         </div>
