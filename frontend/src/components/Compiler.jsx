@@ -20,12 +20,10 @@ const Compiler = ({ userId }) => {
   const [activeTab, setActiveTab] = useState("testcase");
   const [showCustomInput, setShowCustomInput] = useState(false);
 
-  const API_BASE_URL = "http://localhost:8000";
-
   const fetchProblem = useCallback(async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${API_BASE_URL}/problem/${problemId}`);
+      const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/problem/${problemId}`);
       if (res.data?.problem) {
         const problemData = res.data.problem;
         if (
@@ -109,7 +107,7 @@ public class Main {
       setCompilationError("");
       setActiveTab("result");
 
-      const { data } = await axios.post(`${API_BASE_URL}/run`, {
+      const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/run`, {
         language,
         code,
         input,
@@ -154,7 +152,7 @@ public class Main {
       setCompilationError("");
       setActiveTab("result");
 
-      const { data } = await axios.post(`${API_BASE_URL}/submit`, {
+      const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/submit`, {
         language,
         code,
         problemId,

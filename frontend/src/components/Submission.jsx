@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
 import axios from "axios";
-import "../Submission.css"; // 👈 CSS for background animation
+import "../Submission.css"; 
 
 function Submission() {
   const [language, setLanguage] = useState("java");
@@ -49,7 +49,7 @@ print(num1 + num2)`;
   const handleSubmit = async () => {
     const payload = { language, code, input };
     try {
-      const { data } = await axios.post("http://localhost:8000/run", payload);
+      const { data } = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/run`, payload);
       setOutput(data.output);
     } catch (error) {
       console.error(error?.response?.data || error.message);

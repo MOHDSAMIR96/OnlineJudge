@@ -22,7 +22,7 @@ const Home = () => {
     const fetchProblems = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:8000/problems");
+        const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/problems`);
         if (isMounted) {
           setProblems(response.data.problems);
           setError(null);

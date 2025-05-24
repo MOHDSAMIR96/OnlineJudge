@@ -29,7 +29,7 @@ const ProblemManager = () => {
   const fetchProblems = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:8000/problems");
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/problems`);
       setProblems(response.data.problems);
       setError("");
     } catch (error) {
@@ -109,11 +109,11 @@ const ProblemManager = () => {
 
       if (isEditing) {
         await axios.put(
-          `http://localhost:8000/problem/${selectedProblem._id}`,
+          `${import.meta.env.VITE_BACKEND_URL}/problem/${selectedProblem._id}`,
           payload
         );
       } else {
-        await axios.post("http://localhost:8000/problem", payload);
+        await axios.post(`${import.meta.env.VITE_BACKEND_URL}/problem`, payload);
       }
 
       resetForm();
@@ -152,7 +152,7 @@ const ProblemManager = () => {
     if (!window.confirm("Are you sure you want to delete this problem?"))
       return;
     try {
-      await axios.delete(`http://localhost:8000/problem/${id}`);
+      await axios.delete(`${import.meta.env.VITE_BACKEND_URL}/problem/${id}`);
       fetchProblems();
     } catch (error) {
       console.error("Error deleting problem", error);

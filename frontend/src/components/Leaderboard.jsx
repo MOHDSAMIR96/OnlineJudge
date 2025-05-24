@@ -13,7 +13,7 @@ const Leaderboard = () => {
         setError(null);
 
         const response = await axios.get(
-          "http://localhost:8000/getLeaderboard",
+          `${import.meta.env.VITE_BACKEND_URL}/getLeaderboard`,
           {
             timeout: 10000,
           }

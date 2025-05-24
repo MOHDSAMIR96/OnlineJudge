@@ -13,7 +13,7 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8000/register", {
+      const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/register`, {
         firstname,
         lastname,
         email,
