@@ -9,8 +9,12 @@ const Home = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  useEffect(() => {  
     const token = localStorage.getItem("token");
+     if (!token) {
+    navigate("/login");
+    return;
+     }
     if (token) {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     }
