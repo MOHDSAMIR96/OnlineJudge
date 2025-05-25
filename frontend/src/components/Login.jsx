@@ -9,6 +9,11 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
+   const handleNavigate = (path) => {
+    navigate(path);
+  };
+
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError("");
@@ -112,7 +117,7 @@ const Login = () => {
         <p className="text-center mt-6 text-sm text-gray-600">
           Don't have an account?{" "}
           <a
-            href="/register"
+            onClick={() => handleNavigate("/register")}
             className="text-blue-500 hover:underline font-medium"
           >
             Sign up
