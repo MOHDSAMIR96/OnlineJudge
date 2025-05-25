@@ -1,12 +1,20 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
 const Leaderboard = () => {
   const [leaders, setLeaders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+ 
 
   useEffect(() => {
+     const token = localStorage.getItem("token");
+     if (!token) {
+    navigate("/login");
+    return;
+     }
     const fetchLeaderboard = async () => {
       try {
         setLoading(true);

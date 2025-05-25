@@ -10,6 +10,10 @@ const Register = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+   const handleNavigate = (path) => {
+    navigate(path);
+  };
+
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
@@ -78,7 +82,7 @@ const Register = () => {
         </form>
         <p className="text-center text-gray-600 mt-5">
           Already have an account?{" "}
-          <a href="/login" className="text-green-600 hover:underline">
+          <a onClick={() => handleNavigate("/login")} className="text-green-600 hover:underline">
             Login
           </a>
         </p>
