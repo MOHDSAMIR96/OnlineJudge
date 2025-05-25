@@ -28,7 +28,7 @@ const Login = () => {
       if (response.data && response.data.user && response.data.user.token) {
         localStorage.setItem("token", response.data.user.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
-        navigate("/home");
+        navigate("/");
       } else {
         throw new Error("Invalid response from server");
       }
