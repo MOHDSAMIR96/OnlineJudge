@@ -66,6 +66,8 @@ function AppContent() {
         <Route path="/register" element={<Register />} />
         <Route path="/" element={<Home />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/submission" element={<Submission />} />
+        <Route path="/create" element={<ProblemManager />} />
 
         {/* Protected routes */}
         <Route
@@ -73,22 +75,6 @@ function AppContent() {
           element={
             <ProtectedRoute>
               <Compiler userId={user?._id} /> {/* Safe access with optional chaining */}
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/submission"
-          element={
-            <ProtectedRoute>
-              <Submission userId={user?._id} /> {/* Pass userId if needed */}
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/create"
-          element={
-            <ProtectedRoute>
-              <ProblemManager userId={user?._id} /> {/* Pass userId if needed */}
             </ProtectedRoute>
           }
         />

@@ -3,7 +3,7 @@ import Editor from "@monaco-editor/react";
 import axios from "axios";
 import "../Submission.css"; 
 
-function Submission() {
+const Submission = () => {
   const [language, setLanguage] = useState("java");
   const [code, setCode] = useState(getDefaultCode("java"));
   const [input, setInput] = useState("");
@@ -148,6 +148,6 @@ print(num1 + num2)`;
       </div>
     </div>
   );
-}
+};
 
 export default Submission;
